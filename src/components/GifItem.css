@@ -1,0 +1,221 @@
+/* Variables CSS */
+:root {
+  --pc-transition-duration: 0.2s;
+  --pc-easing: ease-out;
+  --pc-shine-size: 0.1rem;
+  --pc-glare-size: 0.05rem;
+  --card-opacity: 1; /* Puedes ajustar esto para la opacidad general */
+}
+
+/* Base del wrapper de la tarjeta */
+.gif-card-wrapper {
+  perspective: 2000px;
+  margin-left: 3rem;
+  margin-top: 5rem;
+  transform-style: preserve-3d;
+  width: 100%; /* Ajusta según sea necesario */
+  max-width: 400px; /* Ajusta según sea necesario */
+  aspect-ratio: 1/1; /* Para mantener la proporción cuadrada de un GIF */
+  position: relative;
+  transition: transform var(--pc-transition-duration) var(--pc-easing);
+  pointer-events: none;
+  --rotate-x: 0deg;
+  --rotate-y: 0deg;
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --pointer-from-center: 0;
+  --pointer-from-left: 0.5;
+  --pointer-from-top: 0.5;
+  --background-x: 50%;
+  --background-y: 50%;
+  --card-opacity: 0; /* Inicialmente transparente para la animación */
+
+  /* Para la animación de entrada */
+  animation: card-in 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: calc(
+    var(--card-index) * 50ms
+  ); /* Si tienes un índice para cada tarjeta en la lista */
+}
+
+@keyframes card-in {
+  from {
+    transform: scale(0.8) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+    --card-opacity: 1;
+  }
+}
+
+.gif-card-wrapper.active {
+  transition: transform 0s; /* Sin transición cuando está activo */
+}
+
+/* La tarjeta en sí */
+.gif-card {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--pc-transition-duration) var(--pc-easing);
+  will-change: transform;
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+  transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1);
+  pointer-events: auto; /* Permite interacciones del ratón */
+  background: var(--inner-gradient); /* Gradiente de fondo interno */
+  color: white; /* Color del texto */
+}
+
+.gif-card.active {
+  transition: transform 0s;
+}
+
+/* Capa interior para efectos */
+.gif-inside {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center; /* Centra el contenido verticalmente */
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* Efecto de brillo detrás de la tarjeta */
+.gif-card-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -1%; /* Ajusta el tamaño del brillo */
+  background: var(--behind-gradient);
+  transform: translateZ(-100px) scale(1.1); /* Lo pone detrás y lo escala un poco */
+  filter: blur(20px); /* Desenfoque para el efecto de brillo */
+  transition: opacity var(--pc-transition-duration) var(--pc-easing);
+  opacity: var(--card-opacity);
+  border-radius: 1.5rem; /* Un poco más grande que la tarjeta */
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Capa de ruido (grain) - si deseas añadir textura */
+.gif-card-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -5%;
+  background: var(--grain, none); /* Si no hay grainUrl, será 'none' */
+  mix-blend-mode: overlay;
+  opacity: 0.1; /* Ajusta la intensidad del ruido */
+  pointer-events: none;
+  border-radius: 1.5rem;
+}
+
+/* Brillo en la superficie de la tarjeta */
+.gif-shine {
+  --gradient-opacity: calc(var(--pointer-from-center) * 0.7);
+  background: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsla(0, 0%, 100%, var(--gradient-opacity)) var(--pc-shine-size),
+    hsla(0, 0%, 100%, calc(var(--gradient-opacity) * 0.75))
+      calc(var(--pc-shine-size) * 4),
+    hsla(0, 0%, 100%, 0) calc(var(--pc-shine-size) * 8)
+  );
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity var(--pc-transition-duration) var(--pc-easing);
+  opacity: 0; /* Por defecto invisible */
+  mix-blend-mode: overlay;
+}
+
+.gif-card.active .gif-shine {
+  opacity: 1; /* Visible cuando la tarjeta está activa */
+  transition: opacity 0s;
+}
+
+/* Destello sutil */
+.gif-glare {
+  --gradient-opacity: calc(var(--pointer-from-top) * 0.5 + 0.2);
+  background: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsla(0, 0%, 100%, var(--gradient-opacity)) var(--pc-glare-size),
+    hsla(0, 0%, 100%, calc(var(--gradient-opacity) * 0.5))
+      calc(var(--pc-glare-size) * 8),
+    hsla(0, 0%, 100%, 0) calc(var(--pc-glare-size) * 16)
+  );
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity var(--pc-transition-duration) var(--pc-easing);
+  opacity: 0; /* Por defecto invisible */
+  mix-blend-mode: hard-light;
+}
+
+.gif-card.active .gif-glare {
+  opacity: 1; /* Visible cuando la tarjeta está activa */
+  transition: opacity 0s;
+}
+
+/* Contenido de la tarjeta */
+.gif-content {
+  z-index: 1;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+.gif-image-content {
+  flex-grow: 1; /* Permite que la imagen ocupe el espacio disponible */
+  display: flex;
+  margin-left: 20px;
+  margin-right: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  overflow: hidden; /* Asegura que la imagen no se desborde */
+  border-radius: 0.5rem;
+}
+
+.gif-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* O 'cover' si quieres que la imagen llene el espacio */
+  border-radius: 0.5rem;
+}
+
+.gif-title-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gif-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+  padding: 0.5rem 0;
+  background: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente para el título */
+  border-radius: 0.3rem;
+  width: 100%;
+}
+
+/* Media queries para responsividad (opcional, pero buena práctica) */
+@media (max-width: 768px) {
+  .gif-card-wrapper {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gif-card-wrapper {
+    max-width: 180px;
+  }
+  .gif-title {
+    font-size: 1em;
+  }
+}
